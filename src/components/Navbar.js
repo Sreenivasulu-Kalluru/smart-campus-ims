@@ -24,7 +24,7 @@ export default function Navbar() {
         {/* LOGO */}
         <Link href="/" onClick={closeMenu} className="flex items-center gap-2">
           <Image
-            src="/svu-logo.jfif"
+            src="/svu-logo.jpg"
             alt="SVU Logo"
             width={40}
             height={40}

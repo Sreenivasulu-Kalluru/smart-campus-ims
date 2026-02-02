@@ -1,26 +1,26 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 
 export default function ReportPage() {
   const { data: session } = useSession();
   const router = useRouter();
 
   const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    category: "Electronics",
-    type: "LOST",
-    location: "",
-    contact_info: "",
+    title: '',
+    description: '',
+    category: 'Electronics',
+    type: 'LOST',
+    location: '',
+    contact_info: '',
   });
 
   const [file, setFile] = useState(null); // State for the image file
   const [status, setStatus] = useState({
     loading: false,
-    error: "",
+    error: '',
     success: false,
   });
 
@@ -35,28 +35,34 @@ export default function ReportPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!session) {
-      alert("Please login to report an item");
+      alert('Please login to report an item');
       return;
     }
 
-    setStatus({ loading: true, error: "", success: false });
+    setStatus({ loading: true, error: '', success: false });
 
     try {
-      let imageUrl = "";
+      let imageUrl = '';
 
       // 1. Upload Image to Cloudinary (if a file is selected)
       if (file) {
         const imageFormData = new FormData();
-        imageFormData.append("file", file);
-        imageFormData.append("upload_preset", "abneoerx"); // <--- PASTE YOUR PRESET NAME HERE
-        imageFormData.append("cloud_name", "dtng4j6fz"); // <--- PASTE YOUR CLOUD NAME HERE
+        imageFormData.append('file', file);
+        imageFormData.append(
+          'upload_preset',
+          process.env.NEXT_PUBLIC_CLOUDINARY_PRESET,
+        );
+        imageFormData.append(
+          'cloud_name',
+          process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+        );
 
         const imageRes = await fetch(
-          `https://api.cloudinary.com/v1_1/dtng4j6fz/image/upload`,
+          `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
           {
-            method: "POST",
+            method: 'POST',
             body: imageFormData,
-          }
+          },
         );
 
         const imageData = await imageRes.json();
@@ -64,9 +70,9 @@ export default function ReportPage() {
       }
 
       // 2. Send Data to MongoDB
-      const res = await fetch("/api/items", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch('/api/items', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
           imageUrl, // Add the URL to the data
@@ -74,15 +80,15 @@ export default function ReportPage() {
         }),
       });
 
-      if (!res.ok) throw new Error("Failed to save item");
+      if (!res.ok) throw new Error('Failed to save item');
 
-      setStatus({ loading: false, error: "", success: true });
-      setTimeout(() => router.push("/items"), 2000);
+      setStatus({ loading: false, error: '', success: true });
+      setTimeout(() => router.push('/items'), 2000);
     } catch (error) {
       console.error(error);
       setStatus({
         loading: false,
-        error: "Something went wrong. Try again.",
+        error: 'Something went wrong. Try again.',
         success: false,
       });
     }
@@ -90,7 +96,7 @@ export default function ReportPage() {
 
   // Input style class
   const inputClass =
-    "w-full p-2 border border-gray-300 rounded mt-1 text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none";
+    'w-full p-2 border border-gray-300 rounded mt-1 text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none';
 
   return (
     <div className="min-h-screen bg-gray-50 p-6 flex justify-center items-center">
@@ -118,7 +124,7 @@ export default function ReportPage() {
                 type="radio"
                 name="type"
                 value="LOST"
-                checked={formData.type === "LOST"}
+                checked={formData.type === 'LOST'}
                 onChange={handleChange}
                 className="hidden peer"
               />
@@ -131,7 +137,7 @@ export default function ReportPage() {
                 type="radio"
                 name="type"
                 value="FOUND"
-                checked={formData.type === "FOUND"}
+                checked={formData.type === 'FOUND'}
                 onChange={handleChange}
                 className="hidden peer"
               />
@@ -223,7 +229,7 @@ export default function ReportPage() {
             disabled={status.loading}
             className="w-full bg-blue-600 text-white p-3 rounded font-bold hover:bg-blue-700 transition disabled:bg-gray-400 mt-4"
           >
-            {status.loading ? "Uploading..." : "Submit Report"}
+            {status.loading ? 'Uploading...' : 'Submit Report'}
           </button>
         </form>
       </div>

@@ -1,23 +1,24 @@
+import connectDB from '@/lib/db';
+import Item from '@/models/Item';
 import Link from 'next/link';
-import ItemsList from '@/components/ItemsList'; // Import your new component
+import ItemsList from '@/components/ItemsList';
 
 export const dynamic = 'force-dynamic';
 
 async function getItems() {
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/items`,
-      {
-        cache: 'no-store',
-      },
-    );
+    await connectDB();
+    // Sort by createdAt descending (newest first)
+    // We convert the documents to plain objects so they can be passed to the Client Component
+    const items = await Item.find({}).sort({ createdAt: -1 }).lean();
 
-    if (!res.ok) {
-      throw new Error('Failed to fetch items');
-    }
-
-    const json = await res.json();
-    return json.data; // Return just the array of data
+    // Convert _id and createdAt/updatedAt to strings for serialization
+    return items.map((item) => ({
+      ...item,
+      _id: item._id.toString(),
+      createdAt: item.createdAt?.toISOString(),
+      updatedAt: item.updatedAt?.toISOString(),
+    }));
   } catch (error) {
     console.error('Error loading items:', error);
     return [];
